@@ -1,47 +1,45 @@
 package guru.springframework.repositories;
 
 import guru.springframework.domain.UnitOfMeasure;
+import guru.springframework.repositories.reactive.UnitOfMeasureReactiveRepository;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import java.util.Optional;
+import reactor.core.publisher.Flux;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  * Created by jt on 6/17/17.
  */
-@Ignore
 @RunWith(SpringRunner.class)
-@DataJpaTest
+@DataMongoTest
 public class UnitOfMeasureRepositoryIT {
 
     @Autowired
-    UnitOfMeasureRepository unitOfMeasureRepository;
+    UnitOfMeasureReactiveRepository unitOfMeasureReactiveRepository;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
     }
 
     @Test
-    public void findByDescription() throws Exception {
+    public void findByDescription() {
+        String description = "Teaspoon";
+        UnitOfMeasure unitOfMeasure = new UnitOfMeasure();
+        unitOfMeasure.setDescription(description);
 
-        Optional<UnitOfMeasure> uomOptional = unitOfMeasureRepository.findByDescription("Teaspoon");
+        unitOfMeasureReactiveRepository.save(unitOfMeasure).block();
 
-        assertEquals("Teaspoon", uomOptional.get().getDescription());
-    }
+        Flux<UnitOfMeasure> uomFlux = unitOfMeasureReactiveRepository.findByDescription(description);
+        assertEquals(description, uomFlux.blockFirst().getDescription());
 
-    @Test
-    public void findByDescriptionCup() throws Exception {
-
-        Optional<UnitOfMeasure> uomOptional = unitOfMeasureRepository.findByDescription("Cup");
-
-        assertEquals("Cup", uomOptional.get().getDescription());
+        Flux<UnitOfMeasure> uomFlux2 = unitOfMeasureReactiveRepository.findByDescription(description + "xxx");
+        assertNull(uomFlux2.blockFirst());
     }
 
 }
