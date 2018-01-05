@@ -70,6 +70,8 @@ public class ImageControllerTest {
                 new MockMultipartFile("imagefile", "testing.txt", "text/plain",
                         "Spring Framework Guru".getBytes());
 
+        when(imageService.saveImageFile(any(), any())).thenReturn(Mono.empty());
+
         mockMvc.perform(multipart("/recipe/1/image").file(multipartFile))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(header().string("Location", "/recipe/1/show"));
@@ -90,7 +92,7 @@ public class ImageControllerTest {
 
         int i = 0;
 
-        for (byte primByte : s.getBytes()){
+        for (byte primByte : s.getBytes()) {
             bytesBoxed[i++] = primByte;
         }
 
