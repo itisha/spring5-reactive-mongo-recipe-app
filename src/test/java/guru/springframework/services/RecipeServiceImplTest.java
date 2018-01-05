@@ -5,7 +5,6 @@ import guru.springframework.commands.RecipeCommand;
 import guru.springframework.converters.RecipeCommandToRecipe;
 import guru.springframework.converters.RecipeToRecipeCommand;
 import guru.springframework.domain.Recipe;
-import guru.springframework.exceptions.NotFoundException;
 import guru.springframework.repositories.reactive.RecipeReactiveRepository;
 import org.junit.Before;
 import org.junit.Test;
@@ -60,15 +59,6 @@ public class RecipeServiceImplTest {
         assertNotNull("Null recipe returned", recipeReturned);
         verify(recipeReactiveRepository, times(1)).findById(anyString());
         verify(recipeReactiveRepository, never()).findAll();
-    }
-
-    @Test(expected = NotFoundException.class)
-    public void getRecipeByIdTestNotFound() {
-        when(recipeReactiveRepository.findById(anyString())).thenReturn(Mono.empty());
-
-        Recipe recipeReturned = recipeService.findById("1").block();
-
-        //should go boom
     }
 
     @Test
