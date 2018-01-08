@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import reactor.core.publisher.Flux;
 
 /**
  * Created by jt on 6/28/17.
@@ -30,6 +31,7 @@ public class IngredientController {
     private final String INGREDIENT_FORM = "recipe/ingredient/ingredientform";
 
     private WebDataBinder webDataBinder;
+    private Flux<UnitOfMeasureCommand> unitOfMeasureCommandFlux = null;
 
     public IngredientController(IngredientService ingredientService, RecipeService recipeService, UnitOfMeasureService unitOfMeasureService) {
         this.ingredientService = ingredientService;
@@ -73,8 +75,6 @@ public class IngredientController {
         //init uom
         ingredientCommand.setUom(new UnitOfMeasureCommand());
 
-        model.addAttribute("uomList", unitOfMeasureService.listAllUoms());
-
         return "recipe/ingredient/ingredientform";
     }
 
@@ -83,7 +83,6 @@ public class IngredientController {
                                          @PathVariable String id, Model model) {
         model.addAttribute("ingredient", ingredientService.findByRecipeIdAndIngredientId(recipeId, id).block());
 
-        model.addAttribute("uomList", unitOfMeasureService.listAllUoms());
         return INGREDIENT_FORM;
     }
 
@@ -97,8 +96,6 @@ public class IngredientController {
             bindingResult.getAllErrors().forEach(objectError -> {
                 log.debug(objectError.toString());
             });
-
-            model.addAttribute("uomList", unitOfMeasureService.listAllUoms());
 
             return INGREDIENT_FORM;
         }
@@ -118,5 +115,13 @@ public class IngredientController {
         ingredientService.deleteById(recipeId, id).block();
 
         return "redirect:/recipe/" + recipeId + "/ingredients";
+    }
+
+    @ModelAttribute("uomList")
+    public Flux<UnitOfMeasureCommand> getUnitOfMeasureCommandFlux() {
+        if (this.unitOfMeasureCommandFlux == null) {
+            this.unitOfMeasureCommandFlux = unitOfMeasureService.listAllUoms();
+        }
+        return this.unitOfMeasureCommandFlux;
     }
 }
